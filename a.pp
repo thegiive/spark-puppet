@@ -20,6 +20,8 @@ class install_java {
 }
 
 class hadoop{
+	$hadoop_jobtracker_host = "localhost:54311" 
+	$hdfs_replication_value = 1 
 	exec {"apps_wget":
 		command => "/usr/bin/wget  http://ftp.twaren.net/Unix/Web/apache/hadoop/common/hadoop-1.2.0/hadoop-1.2.0.tar.gz -O /tmp/hadoop.tgz",
 unless => "/bin/ls /tmp/hadoop.tgz",
@@ -36,12 +38,12 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 	}
 	file{ "mapred-site.xml" : 
 		path => "/home/thegiive/env/hadoop-1.2.0/conf/mapred-site.xml" , 
-		source => "puppet:///hadoop/mapred-site.xml" , 
+		content => template("hadoop/mapred-site.xml"), 
 		require => Exec["untar hadoop"] , 
 	}
 	file{ "hdfs-site.xml" : 
 		path => "/home/thegiive/env/hadoop-1.2.0/conf/hdfs-site.xml" , 
-		source => "puppet:///hadoop/hdfs-site.xml" , 
+		content => template("hadoop/hdfs-site.xml"), 
 		require => Exec["untar hadoop"] , 
 	}
 	file{ "hadoop-env.sh" : 
@@ -49,11 +51,6 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 		source => "puppet:///hadoop/hadoop-env.sh" , 
 		require => Exec["untar hadoop"] , 
 	}
-	#exec { "format hadoop": 
-	#	command => "/home/thegiive/env/hadoop-1.2.0/bin/hadoop namenode -format -force", 
-	#	cwd => "/home/thegiive/env" , 
-	#	require => Exec["untar hadoop"] ,
-	#}
 	exec { "run hadoop": 
 		command => "/home/thegiive/env/hadoop-1.2.0/bin/start-all.sh", 
 		cwd => "/home/thegiive/env" , 
