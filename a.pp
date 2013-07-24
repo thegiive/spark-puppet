@@ -20,7 +20,9 @@ class install_java {
 }
 
 class hadoop{
-	 require( Class["install_java"] )
+		 Class['install_java']->Class['hadoop']
+
+
 
 	#http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/
 	$hadoop_location = "/home/thegiive/env" 
@@ -36,7 +38,7 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 	exec {"untar hadoop":
 		command => "/bin/tar  zxvf  /tmp/hadoop.tgz",
 		cwd => "${hadoop_location}" , 
-		require => Exec["apps_wget"] , 
+		#require => Exec["apps_wget"] , 
 	}
 	file{ "core-site.xml" : 
 		path => "${hadoop_location}/${hadoop_version}/conf/core-site.xml" , 
@@ -58,58 +60,70 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 		source => "puppet:///hadoop/hadoop-env.sh" , 
 		require => Exec["untar hadoop"] , 
 	}
-	exec { "generate rsa": 
-		command => "/usr/bin/ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa" , 
-	}
-	exec { "cat rsa": 
-		command => "/bin/cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys" , 
-		require => Exec["generate rsa"] , 
-	}
-	
-	exec { "run hadoop": 
-		command => "${hadoop_location}/${hadoop_version}/bin/start-all.sh", 
-		cwd => "${hadoop_location}" ,
+	#exec { "generate rsa": 
+	#	command => "/usr/bin/ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa" , 
+	#}
+	#exec { "cat rsa": 
+	#	command => "/bin/cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys" , 
+	#	require => Exec["generate rsa"] , 
+	#}
+
+	exec { "format hadoop namenode": 
+		command => "${hadoop_location}/${hadoop_version}/bin/hadoop namenode -format", 
 		require => Exec["untar hadoop"] ,
 	}
+	
+	#exec { "run hadoop": 
+	#	command => "${hadoop_location}/${hadoop_version}/bin/start-all.sh", 
+	#	cwd => "${hadoop_location}" ,
+	#	require => Exec["format hadoop namenode"] ,
+	#}
 
 }
 
 class spark{
-	 require( Class["hadoop"] )
+		 Class['hadoop']->Class['spark']
 	$spark_location = "/home/thegiive/env" 
+	$base_location = "/home/thegiive/env" 
+	$scala_version = "scala-2.9.2" 
+	$scala_location = "${base_location}/${scala_version}"
 	$spark_slave = "localhost" 
 	$spark_version = "spark-0.7.2" 
 	$spark_worker_memory = "1g" 
-       	$scala_home="/home/thegiive/scala-2.9.2"
+       	$scala_home="${base_location}/${$scala_version}"
        # https://github.com/amplab/shark/wiki/Running-Shark-on-a-Cluster 
        #scala home /usr/bin/
-       package { "scala":
-	       ensure => '2.9.2+dfsg-1' , 
-        }
+       #package { "scala":
+       #        ensure => '2.9.2+dfsg-1' , 
+       # }
+	exec {"untar scala":
+		command => "/bin/tar  zxvf  /tmp/scala.tgz",
+		cwd => "${scala_location}" , 
+	}
 	exec {"wget_spark":
 		command => "/usr/bin/wget  http://spark-project.org/files/spark-0.7.2-prebuilt-hadoop1.tgz      -O /tmp/spark.tgz",
 			unless => "/bin/ls /tmp/spark.tgz",
-			require => Package["scala"] , 
+	#		require => Package["scala"] , 
 	}
 	exec {"untar spark":
 		command => "/bin/tar  zxvf  /tmp/spark.tgz",
 		cwd => "${spark_location}" , 
-		require => Exec["wget_spark"] , 
+	#	require => Exec["wget_spark"] , 
 	}
 	file{ "spark-env.sh" : 
 		path => "${spark_location}/${spark_version}/conf/spark-env.sh" , 
 		content => template("spark/spark-env.sh"), 
 		require => Exec["untar spark"] , 
 	}
-	exec { "run spark": 
-		command => "${spark_location}/${spark_version}/bin/start-all.sh", 
-		cwd => "${spark_location}" ,
-		require => file["spark-env.sh"] ,
-	}
+	#exec { "run spark": 
+	#	command => "${spark_location}/${spark_version}/bin/start-all.sh", 
+	#	cwd => "${spark_location}" ,
+	#	require => file["spark-env.sh"] ,
+	#}
 }
 
 class shark{
-	 require( Class["spark"] )
+		 Class['spark']->Class['shark']
 	$base_location = "/home/thegiive/env" 
 	$shark_version = "shark-0.7.0"
  	$hive_version = "hive-0.9.0-bin"
@@ -129,8 +143,8 @@ class shark{
 	}
 	exec {"untar shark":
 		command => "/bin/tar  zxvf  /tmp/shark.tgz",
-		cwd => "${shark_location}" , 
-		require => Exec["wget_shark"] , 
+		cwd => "${base_location}" , 
+	#	require => Exec["wget_shark"] , 
 	}
 	file{ "shark-env.sh" : 
 		path => "${shark_location}/conf/shark-env.sh" , 
@@ -140,6 +154,10 @@ class shark{
 }
 
 class run{
+	require install_java
+	require hadoop
+	require spark
+	require shark
 $hadoop_location = "/home/thegiive/env" 
 $hadoop_version = "hadoop-1.2.0" 
 exec { "runhadoop": 
