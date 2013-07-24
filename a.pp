@@ -63,5 +63,69 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 
 }
 
+class spark{
+	$spark_location = "/home/thegiive/env" 
+	$spark_slave = "localhost" 
+	$spark_version = "spark-0.7.2" 
+	$spark_worker_memory = "1G" 
+       	$scala_home="/usr/bin/"
+       # https://github.com/amplab/shark/wiki/Running-Shark-on-a-Cluster 
+       #scala home /usr/bin/
+       package { "scala":
+	       ensure => '2.9.2+dfsg-1' , 
+        }
+	exec {"wget_spark":
+		command => "/usr/bin/wget  http://spark-project.org/files/spark-0.7.2-prebuilt-hadoop1.tgz      -O /tmp/spark.tgz",
+			unless => "/bin/ls /tmp/spark.tgz",
+			require => Package["scala"] , 
+	}
+	exec {"untar spark":
+		command => "/bin/tar  zxvf  /tmp/spark.tgz",
+		cwd => "${spark_location}" , 
+		require => Exec["wget_spark"] , 
+	}
+	file{ "spark-env.sh" : 
+		path => "${spark_location}/${spark_version}/conf/spark-env.sh" , 
+		content => template("spark/spark-env.sh"), 
+		require => Exec["untar spark"] , 
+	}
+	exec { "run spark": 
+		command => "${spark_location}/${spark_version}/bin/start-all.sh", 
+		cwd => "${spark_location}" ,
+		require => file["spark-env.sh"] ,
+	}
+}
+
+class shark{
+	$base_location = "/home/thegiive/env" 
+	$shark_version = "shark-0.7.0"
+ 	$hive_version = "hive-0.9.0-bin"
+	$shark_location = "${base_location}/${shark_version}"
+	$spark_version = "spark-0.7.2" 
+	$spark_location = "${base_location}/${spark_version}"
+	$spark_server = "spark://localhost:7077"
+	$spark_worker_memory = "1G" 
+
+	$hadoop_version = "hadoop-1.2.0" 
+	$hadoop_location = "${base_location}/${hadoop_version}"
+
+	exec {"wget_shark":
+		command => "/usr/bin/wget  http://spark-project.org/download/shark-0.7.0-hadoop1-bin.tgz        -O /tmp/shark.tgz",
+			unless => "/bin/ls /tmp/shark.tgz",
+	}
+	exec {"untar shark":
+		command => "/bin/tar  zxvf  /tmp/shark.tgz",
+		cwd => "${shark_location}" , 
+		require => Exec["wget_shark"] , 
+	}
+	file{ "shark-env.sh" : 
+		path => "${shark_location}/conf/shark-env.sh" , 
+		content => template("shark/shark-env.sh"), 
+		require => Exec["untar shark"] , 
+	}
+}
+
 #include install_java
-include hadoop
+#include hadoop
+#include spark
+include shark
