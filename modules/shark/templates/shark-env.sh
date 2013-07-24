@@ -20,7 +20,7 @@
 export SPARK_MEM=1g
 
 # (Required) Set the master program's memory
-export SHARK_MASTER_MEM=1g
+#export SHARK_MASTER_MEM=1g
 
 # (Required) Point to your Scala installation.
 export SCALA_HOME=""
