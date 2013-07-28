@@ -57,7 +57,7 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 	}
 	exec { "run hadoop": 
 		command => "${hadoop_location}/${hadoop_version}/bin/start-all.sh", 
-		cwd => "${hadoop_location}" 
+		cwd => "${hadoop_location}" ,
 		require => Exec["untar hadoop"] ,
 	}
 
