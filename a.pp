@@ -37,7 +37,7 @@ unless => "/bin/ls /tmp/hadoop.tgz",
 	}
 	file{ "core-site.xml" : 
 		path => "${hadoop_location}/${hadoop_version}/conf/core-site.xml" , 
-		source => "puppet:///hadoop/core-site.xml" , 
+		content => template("hadoop/core-site.xml"), 
 		require => Exec["untar hadoop"] , 
 	}
 	file{ "mapred-site.xml" : 
