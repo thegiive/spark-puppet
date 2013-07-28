@@ -155,8 +155,8 @@ exec { "runspark":
 
 }
 }
-#include install_java
-#include hadoop
-#include spark
-#include shark
+include install_java
+include hadoop
+include spark
+include shark
 include run
