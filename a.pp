@@ -100,6 +100,7 @@ class shark{
 	$base_location = "/home/thegiive/env" 
 	$shark_version = "shark-0.7.0"
  	$hive_version = "hive-0.9.0-bin"
+	$hive_location = "${base_location}/${hive_version}"
 	$shark_location = "${base_location}/${shark_version}"
 	$spark_version = "spark-0.7.2" 
 	$spark_location = "${base_location}/${spark_version}"

@@ -38,11 +38,11 @@ export HIVE_HOME=""
 #export MASTER=""
 #export MESOS_NATIVE_LIBRARY=/usr/local/lib/libmesos.so
 
-export HADOOP_HOME=/home/thegiive/hadoop-1.2.0
-export HIVE_HOME=/home/thegiive/hive-0.9.0-bin
-export MASTER=spark://localhost:7077
-export SPARK_HOME=/home/thegiive/spark-0.7.2/
-export SPARK_MEM=1g
+export HADOOP_HOME=<%= @hadoop_location %>
+export HIVE_HOME=<%= @hive_location %>
+export MASTER=<%= @spark_server %>
+export SPARK_HOME=<%= @spark_location %>
+export SPARK_MEM=<%= @spark_worker_memory %>
 
 source $SPARK_HOME/conf/spark-env.sh
 
