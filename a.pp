@@ -24,7 +24,7 @@ class hadoop{
 	$hadoop_version = "hadoop-1.2.0" 
 	$hadoop_jobtracker_host = "localhost:54311" 
 	$hdfs_replication_value = 1 
-	$hadoop_tmp_dir = $hadoop_location+"/"+$hadoop_version+"/tmp/"
+	$hadoop_tmp_dir = "${hadoop_location}/${hadoop_version}/tmp/"
 	$hadoop_hdfs_host = "hdfs://localhost:54310" 
 	exec {"apps_wget":
 		command => "/usr/bin/wget  http://ftp.twaren.net/Unix/Web/apache/hadoop/common/hadoop-1.2.0/hadoop-1.2.0.tar.gz -O /tmp/hadoop.tgz",
